@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Test</title>
+	<link rel="stylesheet" type="text/css" href="http://meyerweb.com/eric/tools/css/reset/reset.css" />
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.js"></script>
+	<script type="text/javascript" src="sizing.js"></script>
+	<style type="text/css">
+
+
+
+		/* Widget  Styles */
+		body {
+			box-sizing: border-box;
+		}
+
+		.double {
+			background: url('leaves-on-forest-floor.jpg');
+			background-color: red;
+		}
+
+		.knockout {
+			background: url('leaves-on-forest-floor.jpg');
+			-webkit-text-fill-color: transparent;
+  			-webkit-background-clip: text;
+		}
+
+		
+
+		/* Non Applicable Styles */
+
+		body {
+
+		}
+
+		.vertical-center {
+			vertical-align: center;
+			display:block;
+			position:absolute;
+			top: 50%;
+			transform: translateY( -50% );
+		}
+
+		.horizontal-center {
+			vertical-align: center;
+			display:block;
+			position:absolute;
+			left: 50%;
+			transform: translateX( -50% );
+
+		}
+
+		.giant {
+			font-family: arial;
+			font-size: 62px;
+		}
+
+		.poem {
+			letter-spacing: -5px;
+		}
+
+	</style>
+</head>
+<body>
+
+
+	<div class="double all">
+	<div class="knockout">
+		<p class="giant">Call me Ishmael. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world. It is a way I have of driving off the spleen and regulating the circulation. Whenever I find myself growing grim about the mouth; whenever it is a damp, drizzly November in my soul; whenever I find myself involuntarily pausing before coffin warehouses, and bringing up the rear of every funeral I meet; and especially whenever my hypos get such an upper hand of me, that it requires a strong moral principle to prevent me from deliberately stepping into the street, and methodically knocking people's hats off—then, I account it high time to get to sea as soon as I can. This is my substitute for pistol and ball. With a philosophical flourish Cato throws himself upon his sword; I quietly take to the ship. There is nothing surprising in this. If they but knew it, almost all men in their degree, some time or other, cherish very nearly the same feelings towards the ocean with me.</p>
+	</div>
+	</div>
+
+
+<script type="text/javascript">
+
+	var background = $('.double');
+	var knockout = $('.knockout');
+
+	var scale = 30;
+
+	console.log( background.position() );
+	console.log( knockout.position() );
+
+	knockout.css({
+		"background-position": (-knockout.position().left) + "px " + (-knockout.position().top ) + "px"
+	});
+
+	function retrievePosition( str ) {
+		return str.split(" ").map(function( pos ) {
+			return parseInt( pos.replace('px', '') );
+		})
+	}
+
+	setInterval( function() {
+		var currentPos = retrievePosition( knockout.css('background-position') );
+
+		console.log( currentPos );
+
+		var scale = Math.random();
+
+		knockout.css({
+			"background-position": (currentPos[0] * scale ) + "px " + (100 + currentPos[1]) + "px"
+		});
+
+	}, 100);
+
+
+
+
+
+
+</script>
+</body>
+
+
+</html>
