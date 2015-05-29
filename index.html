@@ -13,19 +13,10 @@
 		body {
 			box-sizing: border-box;
 		}
-
-		.double {
-			background: url('leaves-on-forest-floor.jpg');
-			background-color: red;
-		}
-
-		.knockout {
-			background: url('leaves-on-forest-floor.jpg');
-			-webkit-text-fill-color: transparent;
-  			-webkit-background-clip: text;
-		}
-
-		
+		 
+		 .double {
+		 	background-size: cover;
+		 }
 
 		/* Non Applicable Styles */
 
@@ -52,7 +43,7 @@
 
 		.giant {
 			font-family: arial;
-			font-size: 62px;
+			font-size: 128px;
 		}
 
 		.poem {
@@ -65,49 +56,230 @@
 
 
 	<div class="double all">
-	<div class="knockout">
-		<p class="giant">Call me Ishmael. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world. It is a way I have of driving off the spleen and regulating the circulation. Whenever I find myself growing grim about the mouth; whenever it is a damp, drizzly November in my soul; whenever I find myself involuntarily pausing before coffin warehouses, and bringing up the rear of every funeral I meet; and especially whenever my hypos get such an upper hand of me, that it requires a strong moral principle to prevent me from deliberately stepping into the street, and methodically knocking people's hats off—then, I account it high time to get to sea as soon as I can. This is my substitute for pistol and ball. With a philosophical flourish Cato throws himself upon his sword; I quietly take to the ship. There is nothing surprising in this. If they but knew it, almost all men in their degree, some time or other, cherish very nearly the same feelings towards the ocean with me.</p>
-	</div>
+		<p class="giant">Checkout this great typography.</p>
 	</div>
 
 
 <script type="text/javascript">
+	var options = {
+		parent: '.double',
+		image: 'forest-floor-gray.jpg',
+		background: false,
+		foreground: false
+	};
 
-	var background = $('.double');
-	var knockout = $('.knockout');
+	/**
+	 * knockout : options -> ( ((int x int) -> {top: int, left: int}) -> void )
+	 *
+	 * the knockout module!
+	 * The basic idea here is to pass in some options to this knockout function specifying
+	 * The desired knockout image or images, 
+	 */
+	var knockout = function( options ) {
 
-	var scale = 30;
+		function retrievePosition( str ) {
+			return str.split(" ").map(function( pos ) {
+				return parseInt( pos.replace('px', '') );
+			})
+		}
 
-	console.log( background.position() );
-	console.log( knockout.position() );
+		function submitPosition( left, top ) { return left + "px " + top + "px"; }
+	 
+		function urlOf( path ) { return 'url(' + path + ')'; }
 
-	knockout.css({
-		"background-position": (-knockout.position().left) + "px " + (-knockout.position().top ) + "px"
+		function invert( value ) { return -value; }
+
+		if ( options.parent && (options.image || options.foreground ) ) {
+			var 	knockout = $('<div>'),
+			    	background = $( options.parent ),
+			    	children = background.children().detach();
+
+
+			if ( options.image || options.background ) {
+
+				background
+					.css({
+						'background': urlOf( ( options.image ) ? options.image : options.background )
+					});
+
+			}
+			
+			knockout
+				.css({
+					'background': urlOf( ( options.image ) ? options.image : options.foreground ),
+					'-webkit-text-fill-color': 'transparent',
+					'-webkit-background-clip': 'text'
+				})
+				.appendTo( background )
+				.append( children );
+
+			knockout
+				.css({
+					"background-position": submitPosition( invert( knockout.position().left ), invert( knockout.position().top ) )
+				});
+
+			background
+				.css({
+					"background-position": submitPosition( invert( background.position().left ), invert( background.position().top ) )
+				});
+
+			return {
+				content: children,
+				parent: background,
+				knockout: knockout,
+				update: function( update ) {
+					/**
+					 * (old left) : <int> x (old top) : <int> --> {left: <int>, top: <int>}
+					 */
+					// generator being a function that accepts the current background top and background left position
+					// and computes a new background top and background left position, returning those updated values as a
+					// map {left: <int>, top: <int>}
+					var current  	= retrievePosition( knockout.css('background-position') );
+					var updated  	= update( current[0], current[1] );
+
+					if ( updated.left && updated.top ) {
+						knockout
+							.css({
+								"background-position": submitPosition( updated.left, updated.top )
+							});
+					} else {
+						throw new Error( "The passed update function does not set .left and .top values." );
+					}
+				},
+				updateBackground: function( update ) {
+					/**
+					 * (old left) : <int> x (old top) : <int> --> {left: <int>, top: <int>}
+					 */
+					// generator being a function that accepts the current background top and background left position
+					// and computes a new background top and background left position, returning those updated values as a
+					// map {left: <int>, top: <int>}
+					var current  	= retrievePosition( background.css('background-position') );
+					var updated  	= update( current[0], current[1] );
+
+					if ( updated.left && updated.top ) {
+						background
+							.css({
+								"background-position": submitPosition( updated.left, updated.top )
+							});
+					} else {
+						throw new Error( "The passed update function does not set .left and .top values." );
+					}
+				}
+			};
+
+			
+
+		} else {
+			return false;
+		}
+
+	};
+
+	var KN = knockout( options );
+
+	//KN.knockout.addClass('vertical-center').addClass('horizontal-center');
+
+	/*
+
+		A simple, single use of the update function to update the background position
+		of the knockout image once.
+
+	 */
+	KN.update( function( left, top ) {
+		return {
+			left: left + 10,
+			top: top - 10
+		};
 	});
 
-	function retrievePosition( str ) {
-		return str.split(" ").map(function( pos ) {
-			return parseInt( pos.replace('px', '') );
-		})
-	}
+	/*
+		This example uses polar coordinates to move the background image in an incresing spiral outwards
+	 */
+	var radius = 1; 
+	var increment = .01;
+	var angle = 0;
+	var origin = {};
 
-	setInterval( function() {
-		var currentPos = retrievePosition( knockout.css('background-position') );
+	// KN.update( function( left, top ) {
+	// 	origin.x = left;
+	// 	origin.y = top;
 
-		console.log( currentPos );
+	// 	return {
+	// 		left: origin.x + radius,
+	// 		top: origin.y
+	// 	};
+	// });
 
-		var scale = Math.random();
+	// setInterval( function() {
+	// 	angle = (angle + increment)
+	// 	radius = radius + increment;
 
-		knockout.css({
-			"background-position": (currentPos[0] * scale ) + "px " + (100 + currentPos[1]) + "px"
-		});
+	// 	KN.update( function( left, top ) {
+	// 		return {
+	// 			left: radius * Math.sin( angle ), 
+	// 			top: radius * Math.cos( angle )
+	// 		};
 
-	}, 100);
+	// 	});
+
+	// 	KN.updateBackground( function( left, top ) {
+	// 		return {
+	// 			left: radius * Math.cos( angle ), 
+	// 			top: radius * Math.sin( angle )
+	// 		};
+
+	// 	});
+	// }, 10);
+
+	/*
+
+		An example that allows for some user interaction 
+
+	 */
+
+	 (function() {
+	 	var active = false;
+	 	var prev = {x: undefined, y: undefined};
+
+	 	var map = [
+	 		{action: 'mousedown', callback: function( e ) {
+	 			prev.x = prev.y = undefined;
+	 			active = true;
+	 		}},
+	 		{action: 'mousemove', callback: function( e ) {
+	 			var fn = ( e.shiftKey ) ? KN.updateBackground : KN.update;
+
+
+	 			if ( active ) {
+	 				if ( prev.x != undefined && prev.y != undefined ) {
+
+	 					fn( function(left,top) {
+	 						return {
+	 							left: left - (prev.x - e.clientX),
+	 							top: top - (prev.y - e.clientY)
+	 						};
+	 					});
+
+	 				} 
+
+	 				prev.x = e.clientX;
+	 				prev.y = e.clientY;
+	 			}
+	 		}},
+	 		{action: 'mouseup', callback: function( e ) {
+	 			active = false;
+	 		}},
+	 	];
+
+
+	 	map.forEach( function( entry ) {
+	 		$(document).on( entry.action, entry.callback );
+	 	});
 
 
 
 
-
+	 })();
 
 </script>
 </body>
